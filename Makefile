@@ -61,6 +61,7 @@ KUSTOMIZE := $(TOOLS_BIN_DIR)/kustomize
 MOCKGEN := $(TOOLS_BIN_DIR)/mockgen
 SSM_PLUGIN := $(TOOLS_BIN_DIR)/session-manager-plugin
 CLUSTERAWSADM_SRCS := $(call rwildcard,.,cmd/clusterawsadm/*.*)
+COSIGN := $(TOOLS_BIN_DIR)/cosign
 
 PATH := $(abspath $(TOOLS_BIN_DIR)):$(PATH)
 DOCKER_CLI_EXPERIMENTAL=enabled
@@ -543,6 +544,10 @@ release: clean-release check-release-tag $(RELEASE_DIR)  ## Builds and push cont
 	$(MAKE) release-templates
 	$(MAKE) release-policies
 
+.PHONY: signed-release
+signed-release: release
+	$(COSIGN) sign-blob --yes --bundle signature-bundle .out/*
+
 release-policies: $(RELEASE_POLICIES) ## Release policies
 
 $(RELEASE_DIR)/AWSIAMManagedPolicyControllers.json: $(RELEASE_DIR) $(CLUSTERAWSADM_SRCS)
@@ -624,7 +629,7 @@ upload-staging-artifacts: ## Upload release artifacts to the staging bucket
 
 .PHONY: upload-gh-artifacts
 upload-gh-artifacts: $(GH) ## Upload artifacts to Github release
-	$(GH) release upload $(VERSION) -R $(GH_REPO) --clobber  $(RELEASE_DIR)/*
+	$(GH) release upload $(VERSION) -R $(GH_REPO) --clobber  $(RELEASE_DIR)/* siganture-bundle
 
 IMAGE_PATCH_DIR := $(ARTIFACTS)/image-patch
 

@@ -18,6 +18,7 @@
 1. Make sure you have push permissions to the upstream CAPA repo. Push tag you've just created (`git push <upstream-repo-remote> $VERSION`).
 1. A prow job will start running to push images to the staging repo, can be seen [here](https://testgrid.k8s.io/sig-cluster-lifecycle-image-pushes#post-cluster-api-provider-aws-push-images). The job is called "post-cluster-api-provider-aws-push-images," and is defined in <https://github.com/kubernetes/test-infra/blob/master/config/jobs/image-pushing/k8s-staging-cluster-api.yaml>.
 1. When the job is finished, wait for the images to be created: `docker pull gcr.io/k8s-staging-cluster-api-aws/cluster-api-aws-controller:$VERSION`. You can also wrap this with a command to retry periodically, until the job is complete, e.g. `watch --interval 30 --chgexit docker pull <...>`.
+1. Sign the image using `cosign sign gcr.io/k8s-staging-cluster-api-aws/cluster-api-aws-controller:$VERSION`. A browser window will open for authenticating to Sigstore
 
 ## Promote container images from staging to production
 
@@ -38,7 +39,7 @@ Promote the container images by following the steps below. (For background infor
 ## Create release artifacts, and a GitHub draft release
 
 1.  Again, make sure your repo is clean by git standards.
-1.  Export the current branch `export BRANCH=release-1.5` (`export BRANCH=main`)and run `make release`.
+1.  Export the current branch `export BRANCH=release-1.5` (`export BRANCH=main`) and run `make release`. After compilation has completed, a browser window will open for authenticating to Sigstore for signing the binaries
 1.  Run `make create-gh-release` to create a draft release on Github, copying the generated release notes from `out/CHANGELOG.md` into the draft.
 1.  Run `make upload-gh-artifacts` to upload artifacts from .out/ directory. You may run into API limit errors, so verify artifacts at next step.
 1.  Verify that all the files below are attached to the drafted release:
